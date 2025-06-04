@@ -60,12 +60,13 @@ st.write("Inicio:", start_format, "Fin:", end_format)
 
 
 # Definición de los dataframes principales
-dfA = pd.read_csv("/Users/juanmagonzalez/VsCode/streamlit/WeatherMap/Morelia/Accidentes_Morelia.csv")
+dfA = pd.read_csv("/Morelia/Accidentes_Morelia.csv")
 dfW = pd.read_csv("Morelia/Morelia_Lluvias.csv")
 dfT = pd.read_csv("Morelia/Morelia_Accidentes_Total.csv")
 
+# Utilización de la clase dfTransform para el manejo de las fechas de los dataframes
 trans = tools.dfTransform(dfT, format=True)
-trans.convert(format=True)
+# trans.convert(format=True)
 dfT = trans.df
 dfA = dfA.iloc[::-1]
 dfA = dfA.drop(['Unnamed: 0'], axis=1)
