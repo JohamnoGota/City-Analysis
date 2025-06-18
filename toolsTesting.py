@@ -12,4 +12,3 @@ transformer = (
 )
 
 clean_df = transformer.get_transformed_df()
-clean_df.df.to_csv("Jamaica_cleaned.csv", index=False)

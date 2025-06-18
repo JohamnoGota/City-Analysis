@@ -66,15 +66,19 @@ class DataFrameCleanUp:
 
             self.df['Date_cleaned'] = self.df[self.date_column].apply(_replace_months)
             self.df['DatePython'] = pd.to_datetime(self.df['Date_cleaned'], format='%d %b %Y', errors='coerce')
-            self.df['Date_numeric'] = self.df['DatePython'].apply(lambda x: x.timestamp() if pd.notnull(x) else None)
+            self.df['Date_tuple'] = self.df['DatePython'].apply(
+                lambda x: x.date() if pd.notnull(x) else None
+            )
 
             return self
 
         else:
-            
+
             self.df['DatePython'] = pd.to_datetime(self.df[self.date_column], format='%Y-%m-%d', errors='coerce')
-            self.df['Date_numeric'] = self.df['DatePython'].apply(lambda x: x.timestamp() if pd.notnull(x) else None)
-            
+            self.df['Date_tuple'] = self.df['DatePython'].apply(
+                lambda x: x.date() if pd.notnull(x) else None
+            )
+
             return self
 
 

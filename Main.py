@@ -2,7 +2,7 @@ import locale
 import pandas as pd
 import streamlit as st
 from datetime import date, timedelta
-import tools
+from tools import DataFrameCleanUp
 
 locale.setlocale(locale.LC_TIME, "es_ES.UTF-8")  # Español
 
@@ -60,12 +60,23 @@ st.write("Inicio:", start_format, "Fin:", end_format)
 
 
 # Definición de los dataframes principales
-dfA = pd.read_csv("/Morelia/Accidentes_Morelia.csv")
+dfA = pd.read_csv("Morelia/Accidentes_Morelia.csv")
 dfW = pd.read_csv("Morelia/Morelia_Lluvias.csv")
 dfT = pd.read_csv("Morelia/Morelia_Accidentes_Total.csv")
 
-# Utilización de la clase dfTransform para el manejo de las fechas de los dataframes
-trans = tools.dfTransform(dfT, format=True)
+# Utilización de la clase DataFrameCleanUp para el manejo de las fechas de los dataframes
+
+trans = (
+    DataFrameCleanUp(dfT, date_column='Date', format=True)
+    .convert_location()
+    .convert_date()
+    .addFilters()
+
+)
+
+
+
+# trans = tools.dfTransform(dfT, format=True)
 # trans.convert(format=True)
 dfT = trans.df
 dfA = dfA.iloc[::-1]
@@ -77,7 +88,7 @@ dfW['Date'] = date_format(dfW['Date'])
 
 maskA = (dfA['Date_dt'] > start_time) & (dfA['Date_dt'] < end_time)
 maskW = (dfW['Date'] > start_time) & (dfW['Date'] < end_time)
-maskSum = (dfT['Date'] > start_time) & (dfT['Date'] < end_time)
+maskSum = (dfT['Date_tuple'] > start_time) & (dfT['Date_tuple'] < end_time)
 
 num_accidents = dfT[maskSum]['Accidents'].sum()
 num_rain = dfW[maskW]['rain_sum'].sum()
@@ -99,7 +110,7 @@ st.write("Existen patrones para normalizar que deben tomarse en cuenta para un a
 "La correlación principal para accidentes de tráfico es la cantidad de tráfico que existe en primer lugar. Mientras más concurrida está la ciudad más accidentes suceden " \
 "Es por esto que la mayoria de accidentes ocurren en la semana de trabajo")
 
-dfT = trans.addFilters()
+# dfT = trans.addFilters()
 temp  = dfT.groupby('WeekdayNum')['Accidents'].sum()
 
 st.bar_chart(temp, color='#ff7a73', stack=False)
@@ -113,3 +124,27 @@ st.bar_chart(temp, color='#f2d17e', stack=False)
 
 # dfT.groupby('Month')['Total Accidents']
 # dfT.groupby('WeekNum')['Total Accidents']
+
+# ADDING TRAFFIC IRREGULARITIES 
+
+st.header("Irregularidades de Tráfico, una clase posible")
+
+st.write("Un análisis subsecuente de las condiciones de tráfico en días de lluvia pueden darnos más razones de la percepción de que la lluvia lleva a más accidentes")
+
+dfI = pd.read_csv("Morelia/Morelia_Irregularidades_Causa.csv")
+irr = (
+    DataFrameCleanUp(dfI, date_column='Day', format=False)
+    .convert_date()
+    .addFilters()
+    )
+
+
+dfI = irr.df
+print(dfI.dtypes)
+dfI_counts = dfI['Date_tuple'].value_counts().reset_index()
+print(type(dfI_counts))
+dfI_counts.columns = ['Date_tuple', 'Count']
+dfI_counts = dfI_counts.sort_values('DatePython')
+
+print(dfI_counts)
+# st.bar_chart(dfI_counts, color='#f2d17e', stack=False)
